@@ -6,6 +6,19 @@ module TrackingNumber
       :ontrac
     end
 
+    # commas for multiples
+    def self.uri(*args)
+      _uri = URI('http://www.ontrac.com/trackingdetail.asp')
+      _uri.query = URI.encode_www_form({
+        :tracking => args.map{|a| a.tracking_number }.join(",")
+      })
+      return _uri
+    end
+
+    def uri
+      self.class.uri(self)
+    end
+
     def matches
       self.tracking_number.scan(VERIFY_PATTERN).flatten
     end

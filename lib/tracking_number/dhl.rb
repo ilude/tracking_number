@@ -6,6 +6,21 @@ module TrackingNumber
       :dhl
     end
 
+    # commas for multiples
+    def self.uri(*args)
+      _uri = URI('http://webtrack.dhlglobalmail.com/')
+      _uri.query = URI.encode_www_form({
+        mobile: '',
+        locale: 'en',
+        :trackingnumber => args.map{|a| a.tracking_number }.join(",")
+      })
+      return _uri
+    end
+
+    def uri
+      self.class.uri(self)
+    end
+
     def matches
       self.tracking_number.scan(VERIFY_PATTERN).flatten
     end
