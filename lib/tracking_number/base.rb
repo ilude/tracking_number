@@ -63,7 +63,7 @@ module TrackingNumber
     end
 
     # http://verysimple.com/2011/07/06/ups-tracking-url/
-    def self.uri
+    def self.uri(*args)
       not_implemented
     end
   end
