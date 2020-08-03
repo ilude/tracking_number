@@ -1,22 +1,21 @@
 # Identify if tracking numbers are valid, and which service they belong to
 
-# Information on validating tracking numbers found here:
-# http://answers.google.com/answers/threadview/id/207899.html
-
+require 'json'
+require 'tracking_number/checksum_validations'
+require 'tracking_number/loader'
 require 'tracking_number/base'
-require 'tracking_number/usps'
-require 'tracking_number/fedex'
-require 'tracking_number/ups'
-require 'tracking_number/dhl'
-require 'tracking_number/ontrac'
+require 'tracking_number/info'
+require 'tracking_number/unknown'
+require 'active_support/core_ext/string'
+require 'active_support/core_ext/hash'
 
 if defined?(ActiveModel::EachValidator)
   require 'tracking_number/active_model_validator'
 end
 
-module TrackingNumber
-  TYPES = [UPS, FedExExpress, FedExGround, FedExGround18, FedExGround96, USPS91, USPS20, USPS13, DHL, OnTrac]
+TrackingNumber::Loader.load_tracking_number_data
 
+module TrackingNumber
   def self.search(body)
     TYPES.collect { |type| type.search(body) }.flatten
   end
@@ -28,6 +27,15 @@ module TrackingNumber
       break if tn.valid?
     end
     return tn
+  end
+
+  def self.detect_all(tracking_number)
+    matches = []
+    for test_klass in (TYPES+[Unknown])
+      tn = test_klass.new(tracking_number)
+      matches << tn if tn.valid?
+    end
+    return matches
   end
 
   def self.new(tracking_number)
